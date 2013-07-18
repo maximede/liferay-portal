@@ -35,6 +35,7 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +90,7 @@ public class FriendlyURLServlet extends HttpServlet {
 
 		String redirect = mainPath;
 
-		String pathInfo = request.getPathInfo();
+		String pathInfo = URLDecoder.decode(request.getPathInfo(), "UTF-8");
 
 		request.setAttribute(
 			WebKeys.FRIENDLY_URL, _friendlyURLPathPrefix.concat(pathInfo));

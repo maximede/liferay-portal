@@ -67,8 +67,8 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 
 	public long getClassPK() {
 		if ((_article.isDraft() || _article.isPending()) &&
-			(_article.getVersion() !=
-				JournalArticleConstants.VERSION_DEFAULT)) {
+				(_article.getVersion() !=
+						JournalArticleConstants.VERSION_DEFAULT)) {
 
 			return _article.getPrimaryKey();
 		}
@@ -103,33 +103,33 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 	public PortletURL getURLEdit(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse)
-		throws Exception {
+			throws Exception {
 
 		PortletURL portletURL = liferayPortletResponse.createLiferayPortletURL(
-			getControlPanelPlid(liferayPortletRequest), PortletKeys.JOURNAL,
-			PortletRequest.RENDER_PHASE);
+				getControlPanelPlid(liferayPortletRequest), PortletKeys.JOURNAL,
+				PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter("struts_action", "/journal/edit_article");
 		portletURL.setParameter(
-			"groupId", String.valueOf(_article.getGroupId()));
+				"groupId", String.valueOf(_article.getGroupId()));
 		portletURL.setParameter("articleId", _article.getArticleId());
 		portletURL.setParameter(
-			"version", String.valueOf(_article.getVersion()));
+				"version", String.valueOf(_article.getVersion()));
 
 		return portletURL;
 	}
 
 	@Override
 	public PortletURL getURLExport(
-		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse) {
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse) {
 
 		PortletURL portletURL = liferayPortletResponse.createActionURL();
 
 		portletURL.setParameter(
-			"struts_action", "/asset_publisher/export_journal_article");
+				"struts_action", "/asset_publisher/export_journal_article");
 		portletURL.setParameter(
-			"groupId", String.valueOf(_article.getGroupId()));
+				"groupId", String.valueOf(_article.getGroupId()));
 		portletURL.setParameter("articleId", _article.getArticleId());
 
 		return portletURL;
@@ -145,11 +145,11 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
 			String noSuchEntryRedirect)
-		throws Exception {
+			throws Exception {
 
 		ThemeDisplay themeDisplay =
-			(ThemeDisplay)liferayPortletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+				(ThemeDisplay)liferayPortletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
 		Group group = themeDisplay.getScopeGroup();
 
@@ -159,26 +159,25 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 			}
 
 			String groupFriendlyURL = PortalUtil.getGroupFriendlyURL(
-				group, false, themeDisplay);
+					group, false, themeDisplay);
 
 			return groupFriendlyURL.concat(
-				JournalArticleConstants.CANONICAL_URL_SEPARATOR).concat(
-					HtmlUtil.escape(_article.getUrlTitle()));
+			JournalArticleConstants.CANONICAL_URL_SEPARATOR).concat(_article.getUrlTitle());
 		}
 
 		Layout layout = themeDisplay.getLayout();
 
 		List<Long> hitLayoutIds =
-			JournalContentSearchLocalServiceUtil.getLayoutIds(
-				layout.getGroupId(), layout.isPrivateLayout(),
-				_article.getArticleId());
+				JournalContentSearchLocalServiceUtil.getLayoutIds(
+						layout.getGroupId(), layout.isPrivateLayout(),
+						_article.getArticleId());
 
 		if (!hitLayoutIds.isEmpty()) {
 			Long hitLayoutId = hitLayoutIds.get(0);
 
 			Layout hitLayout = LayoutLocalServiceUtil.getLayout(
-				layout.getGroupId(), layout.isPrivateLayout(),
-				hitLayoutId.longValue());
+					layout.getGroupId(), layout.isPrivateLayout(),
+					hitLayoutId.longValue());
 
 			return PortalUtil.getLayoutURL(hitLayout, themeDisplay);
 		}
@@ -206,13 +205,13 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 	@Override
 	public boolean hasEditPermission(PermissionChecker permissionChecker) {
 		return JournalArticlePermission.contains(
-			permissionChecker, _article, ActionKeys.UPDATE);
+				permissionChecker, _article, ActionKeys.UPDATE);
 	}
 
 	@Override
 	public boolean hasViewPermission(PermissionChecker permissionChecker) {
 		return JournalArticlePermission.contains(
-			permissionChecker, _article, ActionKeys.VIEW);
+				permissionChecker, _article, ActionKeys.VIEW);
 	}
 
 	@Override
@@ -252,10 +251,10 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 	public String render(
 			RenderRequest renderRequest, RenderResponse renderResponse,
 			String template)
-		throws Exception {
+			throws Exception {
 
 		if (template.equals(TEMPLATE_ABSTRACT) ||
-			template.equals(TEMPLATE_FULL_CONTENT)) {
+				template.equals(TEMPLATE_FULL_CONTENT)) {
 
 			renderRequest.setAttribute(WebKeys.JOURNAL_ARTICLE, _article);
 

@@ -89,10 +89,10 @@ public class MBIndexer extends BaseIndexer {
 	public boolean hasPermission(
 			PermissionChecker permissionChecker, long entryClassPK,
 			String actionId)
-		throws Exception {
+			throws Exception {
 
 		return MBMessagePermission.contains(
-			permissionChecker, entryClassPK, ActionKeys.VIEW);
+				permissionChecker, entryClassPK, ActionKeys.VIEW);
 	}
 
 	@Override
@@ -108,23 +108,23 @@ public class MBIndexer extends BaseIndexer {
 	@Override
 	public void postProcessContextQuery(
 			BooleanQuery contextQuery, SearchContext searchContext)
-		throws Exception {
+			throws Exception {
 
 		int status = GetterUtil.getInteger(
-			searchContext.getAttribute(Field.STATUS),
-			WorkflowConstants.STATUS_ANY);
+				searchContext.getAttribute(Field.STATUS),
+				WorkflowConstants.STATUS_ANY);
 
 		if (status != WorkflowConstants.STATUS_ANY) {
 			contextQuery.addRequiredTerm(Field.STATUS, status);
 		}
 
 		boolean discussion = GetterUtil.getBoolean(
-			searchContext.getAttribute("discussion"), false);
+				searchContext.getAttribute("discussion"), false);
 
 		contextQuery.addRequiredTerm("discussion", discussion);
 
 		long threadId = GetterUtil.getLong(
-			(String)searchContext.getAttribute("threadId"));
+				(String)searchContext.getAttribute("threadId"));
 
 		if (threadId > 0) {
 			contextQuery.addRequiredTerm("threadId", threadId);
@@ -140,7 +140,7 @@ public class MBIndexer extends BaseIndexer {
 			}
 
 			BooleanQuery categoriesQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+					searchContext);
 
 			for (long categoryId : categoryIds) {
 				try {
@@ -158,7 +158,7 @@ public class MBIndexer extends BaseIndexer {
 	}
 
 	protected void addReindexCriteria(
-		DynamicQuery dynamicQuery, long companyId) {
+			DynamicQuery dynamicQuery, long companyId) {
 
 		Property property = PropertyFactoryUtil.forName("companyId");
 
@@ -166,7 +166,7 @@ public class MBIndexer extends BaseIndexer {
 	}
 
 	protected void addReindexCriteria(
-		DynamicQuery dynamicQuery, long groupId, long categoryId) {
+			DynamicQuery dynamicQuery, long groupId, long categoryId) {
 
 		Property groupIdProperty = PropertyFactoryUtil.forName("groupId");
 
@@ -191,23 +191,23 @@ public class MBIndexer extends BaseIndexer {
 			MBCategory category = (MBCategory)obj;
 
 			BooleanQuery booleanQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+					searchContext);
 
 			booleanQuery.addRequiredTerm(Field.PORTLET_ID, PORTLET_ID);
 
 			booleanQuery.addRequiredTerm(
-				"categoryId", category.getCategoryId());
+					"categoryId", category.getCategoryId());
 
 			Hits hits = SearchEngineUtil.search(
-				getSearchEngineId(), category.getCompanyId(), booleanQuery,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+					getSearchEngineId(), category.getCompanyId(), booleanQuery,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			for (int i = 0; i < hits.getLength(); i++) {
 				Document document = hits.doc(i);
 
 				SearchEngineUtil.deleteDocument(
-					getSearchEngineId(), category.getCompanyId(),
-					document.get(Field.UID));
+						getSearchEngineId(), category.getCompanyId(),
+						document.get(Field.UID));
 			}
 		}
 		else if (obj instanceof MBMessage) {
@@ -218,32 +218,32 @@ public class MBIndexer extends BaseIndexer {
 			document.addUID(PORTLET_ID, message.getMessageId());
 
 			SearchEngineUtil.deleteDocument(
-				getSearchEngineId(), message.getCompanyId(),
-				document.get(Field.UID));
+					getSearchEngineId(), message.getCompanyId(),
+					document.get(Field.UID));
 		}
 		else if (obj instanceof MBThread) {
 			MBThread thread = (MBThread)obj;
 
 			MBMessage message = MBMessageLocalServiceUtil.getMessage(
-				thread.getRootMessageId());
+					thread.getRootMessageId());
 
 			BooleanQuery booleanQuery = BooleanQueryFactoryUtil.create(
-				searchContext);
+					searchContext);
 
 			booleanQuery.addRequiredTerm(Field.PORTLET_ID, PORTLET_ID);
 
 			booleanQuery.addRequiredTerm("threadId", thread.getThreadId());
 
 			Hits hits = SearchEngineUtil.search(
-				getSearchEngineId(), message.getCompanyId(), booleanQuery,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+					getSearchEngineId(), message.getCompanyId(), booleanQuery,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			for (int i = 0; i < hits.getLength(); i++) {
 				Document document = hits.doc(i);
 
 				SearchEngineUtil.deleteDocument(
-					getSearchEngineId(), message.getCompanyId(),
-					document.get(Field.UID));
+						getSearchEngineId(), message.getCompanyId(),
+						document.get(Field.UID));
 			}
 		}
 	}
@@ -257,7 +257,7 @@ public class MBIndexer extends BaseIndexer {
 		document.addKeyword(Field.CATEGORY_ID, message.getCategoryId());
 		document.addText(Field.CONTENT, processContent(message));
 		document.addKeyword(
-			Field.ROOT_ENTRY_CLASS_PK, message.getRootMessageId());
+				Field.ROOT_ENTRY_CLASS_PK, message.getRootMessageId());
 		document.addText(Field.TITLE, message.getSubject());
 
 		if (message.isAnonymous()) {
@@ -266,7 +266,7 @@ public class MBIndexer extends BaseIndexer {
 
 		try {
 			MBDiscussionLocalServiceUtil.getThreadDiscussion(
-				message.getThreadId());
+					message.getThreadId());
 
 			document.addKeyword("discussion", true);
 		}
@@ -276,13 +276,24 @@ public class MBIndexer extends BaseIndexer {
 
 		document.addKeyword("threadId", message.getThreadId());
 
+		// patch for saving tags in MbDiscussions
+		if (message.isDiscussion()){
+			long classPK = (Long)message.getPrimaryKeyObj();
+			String className = MBDiscussion.class.getName();
+			String[] assetTagNames = AssetTagLocalServiceUtil.getTagNames(
+					className, classPK);
+
+			document.addText(Field.ASSET_TAG_NAMES, assetTagNames);
+		}
+
+
 		return document;
 	}
 
 	@Override
 	protected Summary doGetSummary(
-		Document document, Locale locale, String snippet,
-		PortletURL portletURL) {
+			Document document, Locale locale, String snippet,
+			PortletURL portletURL) {
 
 		String title = document.get(Field.TITLE);
 
@@ -295,7 +306,7 @@ public class MBIndexer extends BaseIndexer {
 		String messageId = document.get(Field.ENTRY_CLASS_PK);
 
 		portletURL.setParameter(
-			"struts_action", "/message_boards/view_message");
+				"struts_action", "/message_boards/view_message");
 		portletURL.setParameter("messageId", messageId);
 
 		return new Summary(title, content, portletURL);
@@ -305,8 +316,9 @@ public class MBIndexer extends BaseIndexer {
 	protected void doReindex(Object obj) throws Exception {
 		MBMessage message = (MBMessage)obj;
 
-		if (message.isDiscussion() ||
-			(message.getStatus() != WorkflowConstants.STATUS_APPROVED)) {
+		// We also index the discussions
+		if (//message.isDiscussion() ||
+				(message.getStatus() != WorkflowConstants.STATUS_APPROVED)) {
 
 			return;
 		}
@@ -314,7 +326,7 @@ public class MBIndexer extends BaseIndexer {
 		Document document = getDocument(message);
 
 		SearchEngineUtil.updateDocument(
-			getSearchEngineId(), message.getCompanyId(), document);
+				getSearchEngineId(), message.getCompanyId(), document);
 	}
 
 	@Override
@@ -325,8 +337,8 @@ public class MBIndexer extends BaseIndexer {
 
 		if (message.isRoot()) {
 			List<MBMessage> messages =
-				MBMessageLocalServiceUtil.getThreadMessages(
-					message.getThreadId(), WorkflowConstants.STATUS_APPROVED);
+					MBMessageLocalServiceUtil.getThreadMessages(
+							message.getThreadId(), WorkflowConstants.STATUS_APPROVED);
 
 			for (MBMessage curMessage : messages) {
 				reindex(curMessage);
@@ -358,8 +370,8 @@ public class MBIndexer extends BaseIndexer {
 		}
 		catch (Exception e) {
 			_log.error(
-				"Could not parse message " + message.getMessageId() + ": " +
-					e.getMessage());
+					"Could not parse message " + message.getMessageId() + ": " +
+							e.getMessage());
 		}
 
 		content = HtmlUtil.extractText(content);
@@ -369,12 +381,12 @@ public class MBIndexer extends BaseIndexer {
 
 	protected void reindexCategories(long companyId) throws Exception {
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			MBCategory.class, PACLClassLoaderUtil.getPortalClassLoader());
+				MBCategory.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Projection minCategoryIdProjection = ProjectionFactoryUtil.min(
-			"categoryId");
+				"categoryId");
 		Projection maxCategoryIdProjection = ProjectionFactoryUtil.max(
-			"categoryId");
+				"categoryId");
 
 		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
@@ -386,12 +398,12 @@ public class MBIndexer extends BaseIndexer {
 		addReindexCriteria(dynamicQuery, companyId);
 
 		List<Object[]> results = MBCategoryLocalServiceUtil.dynamicQuery(
-			dynamicQuery);
+				dynamicQuery);
 
 		Object[] minAndMaxCategoryIds = results.get(0);
 
 		if ((minAndMaxCategoryIds[0] == null) ||
-			(minAndMaxCategoryIds[1] == null)) {
+				(minAndMaxCategoryIds[1] == null)) {
 
 			return;
 		}
@@ -412,10 +424,10 @@ public class MBIndexer extends BaseIndexer {
 
 	protected void reindexCategories(
 			long companyId, long startCategoryId, long endCategoryId)
-		throws Exception {
+			throws Exception {
 
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			MBCategory.class, PACLClassLoaderUtil.getPortalClassLoader());
+				MBCategory.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Property property = PropertyFactoryUtil.forName("categoryId");
 
@@ -425,7 +437,7 @@ public class MBIndexer extends BaseIndexer {
 		addReindexCriteria(dynamicQuery, companyId);
 
 		List<MBCategory> categories = MBCategoryLocalServiceUtil.dynamicQuery(
-			dynamicQuery);
+				dynamicQuery);
 
 		for (MBCategory category : categories) {
 			long groupId = category.getGroupId();
@@ -437,15 +449,15 @@ public class MBIndexer extends BaseIndexer {
 
 	protected void reindexMessages(
 			long companyId, long groupId, long categoryId)
-		throws Exception {
+			throws Exception {
 
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			MBMessage.class, PACLClassLoaderUtil.getPortalClassLoader());
+				MBMessage.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Projection minMessageIdProjection = ProjectionFactoryUtil.min(
-			"messageId");
+				"messageId");
 		Projection maxMessageIdProjection = ProjectionFactoryUtil.max(
-			"messageId");
+				"messageId");
 
 		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
@@ -457,12 +469,12 @@ public class MBIndexer extends BaseIndexer {
 		addReindexCriteria(dynamicQuery, groupId, categoryId);
 
 		List<Object[]> results = MBMessageLocalServiceUtil.dynamicQuery(
-			dynamicQuery);
+				dynamicQuery);
 
 		Object[] minAndMaxMessageIds = results.get(0);
 
 		if ((minAndMaxMessageIds[0] == null) ||
-			(minAndMaxMessageIds[1] == null)) {
+				(minAndMaxMessageIds[1] == null)) {
 
 			return;
 		}
@@ -475,7 +487,7 @@ public class MBIndexer extends BaseIndexer {
 
 		while (startMessageId <= maxMessageId) {
 			reindexMessages(
-				companyId, groupId, categoryId, startMessageId, endMessageId);
+					companyId, groupId, categoryId, startMessageId, endMessageId);
 
 			startMessageId = endMessageId;
 			endMessageId += DEFAULT_INTERVAL;
@@ -485,10 +497,10 @@ public class MBIndexer extends BaseIndexer {
 	protected void reindexMessages(
 			long companyId, long groupId, long categoryId, long startMessageId,
 			long endMessageId)
-		throws Exception {
+			throws Exception {
 
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			MBMessage.class, PACLClassLoaderUtil.getPortalClassLoader());
+				MBMessage.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Property property = PropertyFactoryUtil.forName("messageId");
 
@@ -498,14 +510,14 @@ public class MBIndexer extends BaseIndexer {
 		addReindexCriteria(dynamicQuery, groupId, categoryId);
 
 		List<MBMessage> messages = MBMessageLocalServiceUtil.dynamicQuery(
-			dynamicQuery);
+				dynamicQuery);
 
 		if (messages.isEmpty()) {
 			return;
 		}
 
 		Collection<Document> documents = new ArrayList<Document>(
-			messages.size());
+				messages.size());
 
 		for (MBMessage message : messages) {
 			Document document = getDocument(message);
@@ -514,12 +526,12 @@ public class MBIndexer extends BaseIndexer {
 		}
 
 		SearchEngineUtil.updateDocuments(
-			getSearchEngineId(), companyId, documents);
+				getSearchEngineId(), companyId, documents);
 	}
 
 	protected void reindexRoot(long companyId) throws Exception {
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			Group.class, PACLClassLoaderUtil.getPortalClassLoader());
+				Group.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Projection minGroupIdProjection = ProjectionFactoryUtil.min("groupId");
 		Projection maxGroupIdProjection = ProjectionFactoryUtil.max("groupId");
@@ -534,7 +546,7 @@ public class MBIndexer extends BaseIndexer {
 		addReindexCriteria(dynamicQuery, companyId);
 
 		List<Object[]> results = GroupLocalServiceUtil.dynamicQuery(
-			dynamicQuery);
+				dynamicQuery);
 
 		Object[] minAndMaxGroupIds = results.get(0);
 
@@ -558,10 +570,10 @@ public class MBIndexer extends BaseIndexer {
 
 	protected void reindexRoot(
 			long companyId, long startGroupId, long endGroupId)
-		throws Exception {
+			throws Exception {
 
 		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			Group.class, PACLClassLoaderUtil.getPortalClassLoader());
+				Group.class, PACLClassLoaderUtil.getPortalClassLoader());
 
 		Property property = PropertyFactoryUtil.forName("groupId");
 
