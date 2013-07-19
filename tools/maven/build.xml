@@ -100,9 +100,6 @@
 									<arg value="${mvn.goal.sign-and-deploy}" />
 									<arg value="-DartifactId=${artifact.id}" />
 									<arg value="-Dfile=dist/${artifact.id}.${packaging}" />
-									<arg value="-Dgpg.executable=${gpg.executable}" />
-									<arg value="-Dgpg.keyname=${gpg.keyname}" />
-									<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 									<arg value="-DgroupId=com.liferay.portal" />
 									<arg value="-Djavadoc=dist/${artifact.id}-javadoc.${packaging}" />
 									<arg value="-Dpackaging=${packaging}" />
@@ -120,9 +117,6 @@
 									<arg value="-Dclassifiers=tlddoc" />
 									<arg value="-Dfile=dist/${artifact.id}.${packaging}" />
 									<arg value="-Dfiles=dist/${artifact.id}-tlddoc.${packaging}" />
-									<arg value="-Dgpg.executable=${gpg.executable}" />
-									<arg value="-Dgpg.keyname=${gpg.keyname}" />
-									<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 									<arg value="-DgroupId=com.liferay.portal" />
 									<arg value="-Djavadoc=dist/${artifact.id}-javadoc.${packaging}" />
 									<arg value="-Dpackaging=${packaging}" />
@@ -141,9 +135,6 @@
 							<arg value="${mvn.goal.sign-and-deploy}" />
 							<arg value="-DartifactId=${artifact.id}" />
 							<arg value="-Dfile=dist/${artifact.id}.${packaging}" />
-							<arg value="-Dgpg.executable=${gpg.executable}" />
-							<arg value="-Dgpg.keyname=${gpg.keyname}" />
-							<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 							<arg value="-DgroupId=com.liferay.portal" />
 							<arg value="-Dpackaging=${packaging}" />
 							<arg value="-DpomFile=dist/${artifact.id}.pom" />
