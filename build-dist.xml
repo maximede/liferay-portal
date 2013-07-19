@@ -1424,6 +1424,25 @@ release was successful.</echo>
 			tofile="${app.server.tomcat.bin.dir}/setenv.sh"
 		/>
 
+		<copy
+				file="tools/servers/tomcat/bin/startupDebug.sh"
+				tofile="${app.server.tomcat.bin.dir}/startupDebug.sh"
+				/>
+
+		<copy
+				file="tools/servers/tomcat/conf/tomcat-users.xml"
+				tofile="${app.server.tomcat.dir}/conf/tomcat-users.xml"
+				/>
+
+		<copy
+				file="tools/servers/tomcat/conf/Catalina/localhost/manager.xml"
+				tofile="${app.server.tomcat.dir}/conf/Catalina/localhost/manager.xml"
+				/>
+
+		<copy todir="${app.server.tomcat.dir}/server/">
+			<fileset dir="tools/servers/tomcat/server"/>
+		</copy>
+
 		<chmod perm="a+x">
 			<fileset dir="${app.server.tomcat.bin.dir}">
 				<include name="*.sh" />
