@@ -93,64 +93,80 @@ public class VerifyJournal extends VerifyProcess {
 
 		// Articles
 
-		List<JournalArticle> articles =
-			JournalArticleLocalServiceUtil.getArticles();
+		List<JournalArticle> articles ;
+		//	JournalArticleLocalServiceUtil.getArticles();
 
-		for (JournalArticle article : articles) {
-			long groupId = article.getGroupId();
-			String articleId = article.getArticleId();
-			double version = article.getVersion();
-			String structureId = article.getStructureId();
+		final int step = 1000;
+		int articlesCount = JournalArticleLocalServiceUtil.getJournalArticlesCount();
 
-			if (article.getResourcePrimKey() <= 0) {
-				article =
-					JournalArticleLocalServiceUtil.checkArticleResourcePrimKey(
-						groupId, articleId, version);
+		for (int i = 0; (i-1)*step < articlesCount ; i++) {
+
+			if (_log.isInfoEnabled()) {
+				_log.info("verifying Journal Articles, step "+i+" of "+ Math.floor(articlesCount/step));
 			}
 
-			ResourceLocalServiceUtil.addResources(
-				article.getCompanyId(), 0, 0, JournalArticle.class.getName(),
-				article.getResourcePrimKey(), false, false, false);
-
-			try {
-				AssetEntryLocalServiceUtil.getEntry(
-					JournalArticle.class.getName(),
-					article.getResourcePrimKey());
+			int end = (i + 1) * step;
+			if (end > articlesCount) {
+				end = articlesCount;
 			}
-			catch (NoSuchEntryException nsee) {
-				try {
-					JournalArticleLocalServiceUtil.updateAsset(
-						article.getUserId(), article, null, null, null);
+
+			articles = JournalArticleLocalServiceUtil.getJournalArticles(i * step, end);
+
+
+			for (JournalArticle article : articles) {
+				long groupId = article.getGroupId();
+				String articleId = article.getArticleId();
+				double version = article.getVersion();
+				String structureId = article.getStructureId();
+
+				if (article.getResourcePrimKey() <= 0) {
+					article =
+							JournalArticleLocalServiceUtil.checkArticleResourcePrimKey(
+									groupId, articleId, version);
 				}
-				catch (Exception e) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Unable to update asset for article " +
-								article.getId() + ": " + e.getMessage());
+
+				ResourceLocalServiceUtil.addResources(
+						article.getCompanyId(), 0, 0, JournalArticle.class.getName(),
+						article.getResourcePrimKey(), false, false, false);
+
+				try {
+					AssetEntryLocalServiceUtil.getEntry(
+							JournalArticle.class.getName(),
+							article.getResourcePrimKey());
+				} catch (NoSuchEntryException nsee) {
+					try {
+						JournalArticleLocalServiceUtil.updateAsset(
+								article.getUserId(), article, null, null, null);
+					} catch (Exception e) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+									"Unable to update asset for article " +
+											article.getId() + ": " + e.getMessage());
+						}
 					}
 				}
-			}
 
-			String content = GetterUtil.getString(article.getContent());
+				String content = GetterUtil.getString(article.getContent());
 
-			String newContent = HtmlUtil.replaceMsWordCharacters(content);
+				String newContent = HtmlUtil.replaceMsWordCharacters(content);
 
-			if (Validator.isNotNull(structureId)) {
+				if (Validator.isNotNull(structureId)) {
 				/*JournalStructure structure =
 					JournalStructureLocalServiceUtil.getStructure(
 						groupId, structureId);
 
 				newContent = JournalUtil.removeOldContent(
 					newContent, structure.getXsd());*/
-			}
+				}
 
-			if (!content.equals(newContent)) {
-				JournalArticleLocalServiceUtil.updateContent(
-					groupId, articleId, version, newContent);
-			}
+				if (!content.equals(newContent)) {
+					JournalArticleLocalServiceUtil.updateContent(
+							groupId, articleId, version, newContent);
+				}
 
-			JournalArticleLocalServiceUtil.checkStructure(
-				groupId, articleId, version);
+				JournalArticleLocalServiceUtil.checkStructure(
+						groupId, articleId, version);
+			}
 		}
 
 		if (_log.isDebugEnabled()) {
