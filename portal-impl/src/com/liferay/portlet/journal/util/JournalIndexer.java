@@ -650,6 +650,10 @@ public class JournalIndexer extends BaseIndexer {
 		long endId = startId + DEFAULT_INTERVAL;
 
 		while (startId <= maxId) {
+			if(_log.isInfoEnabled()){
+				_log.info("reindexing articles "+startId +"/"+maxId);
+			}
+
 			reindexArticles(companyId, startId, endId);
 
 			startId = endId;
